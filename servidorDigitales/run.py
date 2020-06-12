@@ -1,7 +1,7 @@
 # Importamos todo lo necesario
 import os
 from flask import Flask, render_template, request, redirect, url_for
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 # instancia del objeto Flask
 app = Flask(__name__)

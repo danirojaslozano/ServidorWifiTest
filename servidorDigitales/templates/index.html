@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>TEST</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+</head>
+<body>
+
+	<form action="/upload" method="POST" enctype="multipart/form-data">
+		<input type="file" name="archivo">
+		<input type="submit" onclick="enviar();">
+	</form>
+
+	<br>
+
+	<div id="nombreArchivo" >  Archivo enviado : {{filename}}</div>
+
+</body>
+</html>
+
+<script type="text/javascript">
+	function enviar() {
+		if (confirm('Esta seguro de enviar este archivo?')) {
+			yourformelement.submit();
+		} else {
+			return false;
+		}
+	}
+</script>

@@ -41,7 +41,6 @@ def verify():
 	global MENSAJE_CONSOLA
 	v = request.form['verificar_data']
 	if v == 'true':
-		print('entre')
 		COMANDO_UPLOAD_CODE_FPGA ='ps'
 		#COMANDO_UPLOAD_CODE_FPGA = "quartus_pgm -m jtag -o 'p;./received_Files/BB_SYSTEM.sof"
 		MENSAJE_CONSOLA = os.popen(COMANDO_UPLOAD_CODE_FPGA).read()
@@ -56,8 +55,14 @@ def switchMLC():
 	print("la nueva accion de la CAMARA es : "  + estadoCamaraNuevo)
 	if(estadoCamaraNuevo=='true'):
 		print('prender')
+		#COMANDO_START_STREAMING ='obs --startstreaming'
+		#ans = os.popen(COMANDO_START_STRAMING).read()
+		#print(ans)
 	elif(estadoCamaraNuevo=='false'):
 		print('apagar')
+		#COMANDO_SHUT_DOWN_STREAMING ='killall obs'
+		#ans = os.popen(COMANDO_START_STRAMING).read()
+		#print(ans)
 	return ""
 
 

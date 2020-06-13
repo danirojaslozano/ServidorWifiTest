@@ -17,14 +17,17 @@ def index():
 		# renderiamos la plantilla "index.html"
 	return render_template('index.html', filename = filename, MENSAJE_CONSOLA = MENSAJE_CONSOLA)
 
-
+#### Ruta para recibir archivo de projecto
 @app.route("/upload", methods=['POST'])
 def uploader():
  	global filename
  	if request.method == 'POST':
- 	# obtenemos el archivo del input "archivo"
+ 		# obtenemos el archivo del input "archivo"
  		f = request.files['archivo']
  		filename = secure_filename(f.filename)
+ 		# Eliminamos el archivo actual si existe
+ 		if path.exists("./received_Files/BB_SYSTEM.sof"):
+ 			os.remove('./received_Files/BB_SYSTEM.sof')
  		# Guardamos el archivo en el directorio "Archivos PDF"
  		f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
  		# Retornamos una respuesta satisfactoria
@@ -32,17 +35,31 @@ def uploader():
 
  	return redirect("/")
  	
-
+#### Ruta para verificar y cargar el codigo a la FPGA
 @app.route("/verifyCode", methods=['POST'])
 def verify():
 	global MENSAJE_CONSOLA
 	v = request.form['verificar_data']
 	if v == 'true':
 		print('entre')
-		COMANDO_UPLOAD_CODE_FPGA = "ps"
+		COMANDO_UPLOAD_CODE_FPGA ='ps'
+		#COMANDO_UPLOAD_CODE_FPGA = "quartus_pgm -m jtag -o 'p;./received_Files/BB_SYSTEM.sof"
 		MENSAJE_CONSOLA = os.popen(COMANDO_UPLOAD_CODE_FPGA).read()
 		print('MENSAJE_CONSOLA',MENSAJE_CONSOLA)
 	return redirect("/")
+
+
+### Ruta para recibir la información del switch Camara, para así comenzar a obtener video
+@app.route('/switchCamara', methods = ['POST'])
+def switchMLC():
+	estadoCamaraNuevo = request.form['CAMARA']
+	print("la nueva accion de la CAMARA es : "  + estadoCamaraNuevo)
+	if(estadoCamaraNuevo=='true'):
+		print('prender')
+	elif(estadoCamaraNuevo=='false'):
+		print('apagar')
+	return ""
+
 
 
 # Iniciamos la aplicación

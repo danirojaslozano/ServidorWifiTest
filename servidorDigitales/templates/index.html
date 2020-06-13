@@ -3,11 +3,15 @@
 <head>
 	<title>TEST</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"
-  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-  crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+	integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	crossorigin="anonymous"></script>
+	<script src="https://embed.twitch.tv/embed/v1.js"></script>
 
 </head>
+
+
+
 <body >
 
 	<form action="/upload" method="POST" enctype="multipart/form-data">
@@ -25,6 +29,17 @@
 	<br>
 
 	{{MENSAJE_CONSOLA}}
+
+	<br>
+	<br>
+	<label class="switch">
+		<input type="checkbox" onchange="switchCamara(this.checked)"> 
+		<span class="slider round"></span>
+	</label>
+
+	<br>
+
+	<div id="twitch-embed"></div>
 
 </body>
 </html>
@@ -48,4 +63,30 @@
 		location.reload();
 	}
 
+	function switchCamara(data){
+		$.ajax('/switchCamara',{
+			data: ({'CAMARA': data}),
+			type: 'POST',
+			success: function(response){
+				console.log(response);
+			},
+			error: function(error){
+				console.log(error);
+			}
+		});
+	}
+
+
+</script>
+
+<script type="text/javascript">
+	var embed = new Twitch.Embed("twitch-embed", {
+		width: 854,
+		height: 480,
+		channel: "darkfsegura",
+		layout: "video",
+		autoplay: false,
+        // only needed if your site is also embedded on embed.example.com and othersite.example.com 
+        //parent: ["embed.example.com", "othersite.example.com"]
+    });
 </script>

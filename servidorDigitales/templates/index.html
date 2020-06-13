@@ -3,9 +3,12 @@
 <head>
 	<title>TEST</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
 
 </head>
-<body>
+<body >
 
 	<form action="/upload" method="POST" enctype="multipart/form-data">
 		<input type="file" name="archivo">
@@ -14,17 +17,35 @@
 
 	<br>
 
-	<div id="nombreArchivo" >  Archivo enviado : {{filename}}</div>
+	<div id="nombreArchivo" >  File send : {{filename}}</div>
+
+
+	<button onclick="verificar()">Verify and upload code</button> 
+
+	<br>
+
+	{{MENSAJE_CONSOLA}}
 
 </body>
 </html>
 
 <script type="text/javascript">
 	function enviar() {
-		if (confirm('Esta seguro de enviar este archivo?')) {
+		if (confirm('Are you sure to send the file?')) {
 			yourformelement.submit();
 		} else {
 			return false;
 		}
 	}
+
+	function verificar() {
+		$.post('/verifyCode', {'verificar_data':'true'} ) ; 
+		if (confirm('Are you sure to upload the code?')) {
+			yourformelement.submit();
+		} else {
+			return false;
+		}
+		location.reload();
+	}
+
 </script>

@@ -56,12 +56,12 @@ def switchMLC():
 	if(estadoCamaraNuevo=='true'):
 		print('prender')
 		#COMANDO_START_STREAMING ='obs --startstreaming'
-		#ans = os.popen(COMANDO_START_STRAMING).read()
+		#ans = os.popen(COMANDO_START_STREAMING).read()
 		#print(ans)
 	elif(estadoCamaraNuevo=='false'):
 		print('apagar')
 		#COMANDO_SHUT_DOWN_STREAMING ='killall obs'
-		#ans = os.popen(COMANDO_START_STRAMING).read()
+		#ans = os.popen(COMANDO_SHUT_DOWN_STREAMING).read()
 		#print(ans)
 	return ""
 

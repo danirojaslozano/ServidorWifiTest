@@ -33,9 +33,21 @@
 	<br>
 	<br>
 	<label class="switch">
+		Camera Switch
 		<input type="checkbox" onchange="switchCamara(this.checked)"> 
 		<span class="slider round"></span>
 	</label>
+
+	<br>
+
+	<label class="switch">
+		FPGA
+		<input type="checkbox" onchange="enviarDatoFPGA_1( this.checked)"> 
+		<span class="slider round"></span>
+		<input type="checkbox" onchange="enviarDatoFPGA_2( this.checked)"> 
+		<span class="slider round"></span>
+	</label>
+
 
 	<br>
 
@@ -57,6 +69,7 @@
 		$.post('/verifyCode', {'verificar_data':'true'} ) ; 
 		if (confirm('Are you sure to upload the code?')) {
 			yourformelement.submit();
+			location.reload();
 		} else {
 			return false;
 		}
@@ -76,6 +89,18 @@
 		});
 	}
 
+	function enviarDatoFPGA_1(data){
+		$.ajax('/switchFPGA',{
+			data: ({'SW1': data,'SW2': '00' }),
+			type: 'POST'
+		});
+	}
+	function enviarDatoFPGA_2(data){
+		$.ajax('/switchFPGA',{
+			data: ({'SW1': '00' ,'SW2': data}),
+			type: 'POST'
+		});
+	}
 
 </script>
 
@@ -86,5 +111,5 @@
 		channel: "darkfsegura",
 		layout: "video",
 		autoplay: false,
-    });
+	});
 </script>

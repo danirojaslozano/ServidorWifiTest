@@ -1,11 +1,51 @@
 # Importamos todo lo necesario
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for,session,g
 from werkzeug.utils import secure_filename
+from datetime import datetime
+
+### clase Usuario
+class User:
+	def __init__(self, id, username, password, start_Time, final_Time):
+		self.id = id
+		self.username = username
+		self.password = password
+		self.start_Time =  start_Time
+		self.final_Time = final_Time
+
+		def __repr__(self):
+			return f'<User: {self.username}>'
+
+	def itsTime(self):
+		now = datetime.now().time()
+		tiempoInicioDT = datetime.strptime(str(self.start_Time), "%H:%M:%S").time()
+		tiempoFinalDT = datetime.strptime(str(self.final_Time), "%H:%M:%S").time()
+		if now > tiempoInicioDT and now < tiempoFinalDT:
+			return True
+		return False
+
+
+### leer usuarios, contraseñas y hotas de un archivo .csv
+import pandas as pd
+new_names = ['LOGIN', 'PASSWD', 'INICIO', 'FIN', 'INTENTOS']
+df = pd.read_csv('SED-virtuallab.csv',sep=';',skiprows=1,names=new_names)
+
+users = []
+users.append(User(id=1, username='Daniela', password='password', start_Time="00:00:00", final_Time="23:59:00"))
+
+for index, row in df.iterrows():
+	users.append(User(id=index+2, username= row['LOGIN'], password=row['PASSWD'], start_Time=row['INICIO'], final_Time=row['FIN']))
+
 
 # instancia del objeto Flask
 app = Flask(__name__)
-# Carpeta de subida
+app.secret_key = 'somesecretkeythatonlyishouldknow'
+
+# variable global para cambiar el mensaje en la pagina de error
+global mensaje_Error
+mensaje_Error = " Error "
+
+# Carpeta donde se guardan los archivos que llegan
 app.config['UPLOAD_FOLDER'] = './received_Files'
 global filename
 global MENSAJE_CONSOLA
@@ -24,6 +64,8 @@ try:
 	print("Comunicacion Serial inicializado")
 except:
 	print("No fue posible iniciar el serial")
+
+	
 #Iniciamos la comunicacion Serial
 def iniciarSerial():
 	try:
@@ -45,15 +87,63 @@ def apagarCamara():
 	#print(ans)
 	print('apagar Camara')
 
-# Funcion para apagar la camara
+# Funcion para prender la camara
 def prenderCamara():
 	print('prender')
 	#COMANDO_START_STREAMING ='obs --startstreaming'
 	#ans = os.popen(COMANDO_START_STREAMING).read()
 	#print(ans)
 
+@app.before_request
+def before_request():
+	g.user = None
+	if 'user_id' in session:
+		user = [x for x in users if x.id == session['user_id']][0]
+		g.user = user
+
 @app.route("/")
+def inicio():
+	return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+	global mensaje_Error
+	if request.method == 'POST':
+		session.pop('user_id', None)
+
+		username = request.form['username']
+		password = request.form['password']
+
+		try:
+			user = [x for x in users if x.username == username][0]
+		except Exception as e:
+			mensaje_Error = "User incorrect"
+			return redirect(url_for('error'))
+		
+		if user and user.password == password:
+			session['user_id'] = user.id
+			return redirect(url_for('index'))
+		else:
+			mensaje_Error = "Password incorrect"
+			return redirect(url_for('error'))
+
+	return render_template('login.html')
+
+@app.route("/error")
+def error():
+	global mensaje_Error
+	return render_template('error.html', mensaje_Error = mensaje_Error)
+
+@app.route("/control")
 def index():
+	global mensaje_Error
+	if not g.user:
+		return redirect(url_for('login'))
+	if not  g.user.itsTime():
+		mensaje_Error = "Out of time"
+		return redirect(url_for('error'))
+
+	print('itstimeUser', g.user.itsTime())
 	apagarCamara()
 		# renderizamos la plantilla "index.html"
 	return render_template('index.html', filename = filename, MENSAJE_CONSOLA = MENSAJE_CONSOLA)
@@ -74,7 +164,7 @@ def uploader():
  		# Retornamos una respuesta satisfactoria
  		print("Se ha guardado el archivo de nombre:", filename)
 
- 	return redirect("/")
+ 	return redirect("/control")
  	
 #### Ruta para verificar y cargar el codigo a la FPGA
 @app.route("/verifyCode", methods=['POST'])
@@ -87,7 +177,7 @@ def verify():
 		MENSAJE_CONSOLA = os.popen(COMANDO_UPLOAD_CODE_FPGA).read()
 		print('MENSAJE_CONSOLA',MENSAJE_CONSOLA)
 		iniciarSerial()
-	return redirect("/")
+	return redirect("/control")
 
 
 ### Ruta para recibir la información del switch Camara, para así comenzar a obtener video

@@ -14,6 +14,21 @@
 
 <body >
 
+	<h1 class="title">
+		{{g.user.username}}'s Profile
+	</h1>
+	<h2 class="subtitle">
+		Your turn started at {{g.user.start_Time}} and will be over at  {{g.user.final_Time}} <br>
+	</h2>
+
+	<h3><p id="timer"></p></h3>
+
+	<br>
+
+	<button onclick="gohome()"> Log out</button>
+
+	<br>
+	
 	<form action="/upload" method="POST" enctype="multipart/form-data">
 		<input type="file" name="archivo">
 		<input type="submit" onclick="enviar();">
@@ -112,4 +127,43 @@
 		layout: "video",
 		autoplay: false,
 	});
+</script>
+<script type="text/javascript">
+	function gohome(){
+		window.location = window.location.origin+'/login'
+	}
+</script>
+
+<script>
+// fecha de hoy
+var hoy = new Date();
+var alarma = hoy.setHours(1, 50, 22);
+// Set the date we're counting down to
+var countDownDate = new Date("Jun 28, 2020 1:36:25").getTime();
+
+// Update the count down every 1 second
+var x = setInterval(function() {
+
+  // Get today's date and time
+  var now = new Date().getTime();
+    
+  // Find the distance between now and the count down date
+  var distance = countDownDate - now;
+    
+  // Time calculations for hours, minutes and seconds
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+  // Output the result in an element with id="timer"
+  document.getElementById("timer").innerHTML = hours + "h "
+  + minutes + "m " + seconds + "s ";
+    
+  // If the count down is over, write some text 
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("timer").innerHTML = "EXPIRED";
+    gohome();
+  }
+}, 1000);
 </script>

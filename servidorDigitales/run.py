@@ -6,16 +6,19 @@ from datetime import datetime
 
 ### clase Usuario
 class User:
-	def __init__(self, id, username, password, start_Time, final_Time):
+	def __init__(self, id, username, password, start_Time, final_Time, conecctions):
 		self.id = id
 		self.username = username
 		self.password = password
 		self.start_Time =  start_Time
 		self.final_Time = final_Time
+		self.conecctions = int(conecctions)
 
 		def __repr__(self):
 			return f'<User: {self.username}>'
 
+
+		### verifica si el usuario esta en turno para acceder a la verificación
 	def itsTime(self):
 		now = datetime.now().time()
 		tiempoInicioDT = datetime.strptime(str(self.start_Time), "%H:%M:%S").time()
@@ -24,6 +27,23 @@ class User:
 			return True
 		return False
 
+		###  revisa la cantidad de conecciones con el usuario para saber si es posible conectar una nueva
+	def availableConnection(self):
+		if self.conecctions>0:
+			return True
+		return False
+
+		###  resta uno a la cantidad de intentos
+	def userConected_log_in(self):
+		self.conecctions = self.conecctions -1
+		return self.conecctions
+
+		###  suma uno a la cantidad de intentos, porque un usuario hizo logOut
+	def userConected_log_out(self):
+		self.conecctions = self.conecctions + 1
+		return self.conecctions
+
+
 
 ### leer usuarios, contraseñas y hotas de un archivo .csv
 import pandas as pd
@@ -31,11 +51,12 @@ new_names = ['LOGIN', 'PASSWD', 'INICIO', 'FIN', 'INTENTOS']
 df = pd.read_csv('SED-virtuallab.csv',sep=';',skiprows=1,names=new_names)
 
 users = []
-users.append(User(id=1, username='Daniela', password='password', start_Time="00:00:00", final_Time="23:59:00"))
+users.append(User(id=1, username='Daniela', password='password', start_Time="00:00:00", final_Time="23:59:00",conecctions =2))
 
 for index, row in df.iterrows():
-	users.append(User(id=index+2, username= row['LOGIN'], password=row['PASSWD'], start_Time=row['INICIO'], final_Time=row['FIN']))
+	users.append(User(id=index+2, username= row['LOGIN'], password=row['PASSWD'], start_Time=row['INICIO'], final_Time=row['FIN'], conecctions = row['INTENTOS']))
 
+users.append(User(id=40, username='Rojas', password='secret', start_Time="00:00:00", final_Time="23:59:00",conecctions =1))
 
 # instancia del objeto Flask
 app = Flask(__name__)
@@ -134,14 +155,30 @@ def error():
 	global mensaje_Error
 	return render_template('error.html', mensaje_Error = mensaje_Error)
 
+@app.route("/logout")
+def logoutfunction():
+	global mensaje_Error
+	mensaje_Error = " Successful logout"
+	if not g.user:
+		return redirect(url_for('login'))
+	else:
+		g.user.userConected_log_out()
+	return render_template('error.html', mensaje_Error = mensaje_Error)
+
+
 @app.route("/control")
 def index():
 	global mensaje_Error
 	if not g.user:
 		return redirect(url_for('login'))
 	if not  g.user.itsTime():
-		mensaje_Error = "Out of time"
+		mensaje_Error = " Out of time "
 		return redirect(url_for('error'))
+	if not  g.user.availableConnection():
+		mensaje_Error = " No additional sessions available  "
+		return redirect(url_for('error'))
+	else:
+		g.user.userConected_log_in()
 
 	print('itstimeUser', g.user.itsTime())
 	apagarCamara()

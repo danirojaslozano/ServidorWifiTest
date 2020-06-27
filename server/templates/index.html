@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>TEST</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+	integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	crossorigin="anonymous"></script>
+
+</head>
+
+<style type="text/css">
+	header{
+		border:none;
+		padding:15px 20px;
+		border-radius:25px;
+		background:rgba(40,57,101,.9);;
+	}
+	body {
+		background-color: #ccc;
+	}
+</style>
+
+
+<body>
+	<header> HOLAAAAA</header>
+
+	<h1 class="title">
+		{{g.user.username}}'s Profile
+	</h1>
+	<h2 class="subtitle">
+		Your turn started at {{g.user.start_Time}} and will be over at  {{g.user.final_Time}} <br>
+	</h2>
+
+	<h3><p id="timer"></p></h3>
+
+	<br>
+
+	<button onclick="gologout()"> Log out</button>
+
+	<br>
+	
+	<form action="/upload" method="POST" enctype="multipart/form-data">
+		<input type="file" name="archivo">
+		<input type="submit" onclick="enviar();">
+	</form>
+
+	<br>
+
+	<div id="nombreArchivo" >  File send : {{filename}}</div>
+
+
+	<button onclick="verificar()">Verify and upload code</button> 
+
+	<br>
+
+	{{MENSAJE_CONSOLA}}
+
+	<br>
+	<br>
+	<label class="switch">
+		Camera Switch
+		<input type="checkbox" onchange="switchCamara(this.checked)"> 
+		<span class="slider round"></span>
+	</label>
+
+	<br>
+
+	<label class="switch">
+		FPGA
+		<input type="checkbox" onchange="enviarDatoFPGA_1( this.checked)"> 
+		<span class="slider round"></span>
+		<input type="checkbox" onchange="enviarDatoFPGA_2( this.checked)"> 
+		<span class="slider round"></span>
+	</label>
+
+
+	<br>
+
+	<iframe width="560" height="315" src="https://www.youtube.com/embed/WduvyrpJpMU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+</body>
+</html>
+
+<script type="text/javascript">
+	function enviar() {
+		if (confirm('Are you sure to send the file?')) {
+			yourformelement.submit();
+		} else {
+			return false;
+		}
+	}
+
+	function verificar() {
+		$.post('/verifyCode', {'verificar_data':'true'} ) ; 
+		if (confirm('Are you sure to upload the code?')) {
+			yourformelement.submit();
+			location.reload();
+		} else {
+			return false;
+		}
+		location.reload();
+	}
+
+	function switchCamara(data){
+		$.ajax('/switchCamara',{
+			data: ({'CAMARA': data}),
+			type: 'POST',
+			success: function(response){
+				console.log(response);
+			},
+			error: function(error){
+				console.log(error);
+			}
+		});
+	}
+
+	function enviarDatoFPGA_1(data){
+		$.ajax('/switchFPGA',{
+			data: ({'SW1': data,'SW2': '00' }),
+			type: 'POST'
+		});
+	}
+	function enviarDatoFPGA_2(data){
+		$.ajax('/switchFPGA',{
+			data: ({'SW1': '00' ,'SW2': data}),
+			type: 'POST'
+		});
+	}
+
+</script>
+
+<script type="text/javascript">
+	function gologout(){
+		window.location = window.location.origin+'/logout'
+	}
+</script>
+
+<script>
+// fecha de hoy
+var hoy = new Date();
+var alarma = hoy.setHours({{g.user.horas_finales}}, {{g.user.minutos_finales}}, {{g.user.segundos_finales.final_Time}}  );
+// Update the count down every 1 second
+var x = setInterval(function() {
+
+  // Get today's date and time
+  var now = new Date().getTime();
+
+  // Find the distance between now and the count down date
+  var distance = alarma - now;
+
+  // Time calculations for hours, minutes and seconds
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  // Output the result in an element with id="timer"
+  document.getElementById("timer").innerHTML = hours + "h "
+  + minutes + "m " + seconds + "s ";
+
+  // If the count down is over, write some text 
+  if (distance < 0) {
+  	clearInterval(x);
+  	document.getElementById("timer").innerHTML = "EXPIRED";
+  	gologout();
+  }
+}, 1000);
+</script>

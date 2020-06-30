@@ -61,12 +61,24 @@ schedule_usuarios =['']
 schedule_color = ['']
 
 users = []
-users.append(User(id=1, username='admin', password='password', start_Time="00:00:00", final_Time="23:59:59",conecctions =20))
+users.append(User(id=1, username='admin', password='password', start_Time="00:00:00", final_Time="23:59:59",conecctions =2))
 
 for index, row in df.iterrows():
-	users.append(User(id=index+2, username= row['LOGIN'], password=row['PASSWD'], start_Time=row['INICIO'], final_Time=row['FIN'], conecctions = row['INTENTOS']))
-
+	if not existeUsuario(row['LOGIN']):
+		users.append(User(id=index+2, username= row['LOGIN'], password=row['PASSWD'], start_Time=row['INICIO'], final_Time=row['FIN'], conecctions = row['INTENTOS']))
+	else:
+		
 users.append(User(id=40, username='admin2', password='secret', start_Time="00:00:00", final_Time="23:59:59",conecctions =1))
+
+
+def existeUsuario(username_buscar):
+	for u in users:
+		if (u.username == username_buscar):
+			return True
+
+	return False
+
+
 
 # instancia del objeto Flask
 app = Flask(__name__)
@@ -191,10 +203,17 @@ def login():
 		
 		if user and user.password == password:
 			session['user_id'] = user.id
-			return redirect(url_for('index'))
+
+			if not  user.availableConnection():
+				mensaje_Error = " No additional sessions available  "
+				return redirect(url_for('error'))
+			else:
+				user.userConected_log_in()
+				return redirect(url_for('index'))
 		else:
 			mensaje_Error = "Password incorrect"
 			return redirect(url_for('error'))
+
 
 	global schedule_horas, schedule_usuarios,schedule_color
 	actualizar_schedule()
@@ -226,11 +245,6 @@ def index():
 	if not  g.user.itsTime():
 		mensaje_Error = " Out of time "
 		return redirect(url_for('error'))
-	if not  g.user.availableConnection():
-		mensaje_Error = " No additional sessions available  "
-		return redirect(url_for('error'))
-	else:
-		g.user.userConected_log_in()
 
 	print('itstimeUser', g.user.itsTime())
 	apagarCamara()
@@ -300,4 +314,4 @@ def switchsSeñales():
 # Iniciamos la aplicación
 
 if __name__ == "__main__":
-	app.run(host='0.0.0.0',port = 8383)
+	app.run(host='0.0.0.0',port = 8383, debug= True)

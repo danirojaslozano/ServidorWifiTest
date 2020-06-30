@@ -63,20 +63,21 @@ schedule_color = ['']
 users = []
 users.append(User(id=1, username='admin', password='password', start_Time="00:00:00", final_Time="23:59:59",conecctions =2))
 
-for index, row in df.iterrows():
-	if not existeUsuario(row['LOGIN']):
-		users.append(User(id=index+2, username= row['LOGIN'], password=row['PASSWD'], start_Time=row['INICIO'], final_Time=row['FIN'], conecctions = row['INTENTOS']))
-	else:
-		
-users.append(User(id=40, username='admin2', password='secret', start_Time="00:00:00", final_Time="23:59:59",conecctions =1))
-
-
 def existeUsuario(username_buscar):
 	for u in users:
 		if (u.username == username_buscar):
 			return True
-
 	return False
+
+
+for index, row in df.iterrows():
+	if not existeUsuario(row['LOGIN']):
+		users.append(User(id=index+2, username= row['LOGIN'], password=row['PASSWD'], start_Time=row['INICIO'], final_Time=row['FIN'], conecctions = row['INTENTOS']))
+
+users.append(User(id=40, username='admin2', password='secret', start_Time="00:00:00", final_Time="23:59:59",conecctions =1))
+
+
+
 
 
 
